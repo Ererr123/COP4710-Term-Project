@@ -1,0 +1,196 @@
+Login:
+	Input:
+	{
+		"username":"john_doe",
+		"password":"securepassword123"
+	}
+	Output:
+	{
+		"id": 1,
+		"username": "john_doe",
+		"password": "securepassword123",
+		"university_ID": 1,
+		"error": ""
+	}
+	
+Register:
+	{
+		"username":"asdfg",
+		"password":"asd",
+		"name":"asd",
+		"university_ID": 1
+	}
+	
+	{
+		"success": true,
+		"user": {
+			"UID": 4,
+			"username": "asdfg",
+			"university_ID": 1
+		},
+		"error": ""
+	}
+	
+createEvent:
+	{
+		"username": "john_doe",
+		"password": "securepassword123",
+		"event_name": "Annual Tech Symposium",
+		"event_category": "Technology",
+		"description": "A gathering of industry leaders and innovators to discuss the latest trends in technology.",
+		"event_time": "10:00:00",
+		"event_date": "2025-06-01",
+		"contact_phone": "987-654-3210",
+		"contact_email": "events@techsymposium.com",
+		"location_ID": 3,
+		"ISA_type": "Public",
+		"university_ID": 5
+	}
+	
+	{
+		"success": true,
+		"event": {
+			"event_ID": 1,
+			"name": "Annual Tech Symposium",
+			"event_category": "Technology",
+			"description": "A gathering of industry leaders and innovators to discuss the latest trends in technology.",
+			"event_time": "10:00:00",
+			"event_date": "2025-06-01",
+			"contact_phone": "987-654-3210",
+			"contact_email": "events@techsymposium.com",
+			"location_ID": 3,
+			"university_ID": 5,
+			"ISA_type": "Public",
+			"created_at": "2025-04-07 14:44:15",
+			"created_by_UID": 1
+		},
+		"error": ""
+	}
+	
+createRSO:
+	{
+	  "username": "john_doe",
+	  "password": "securepassword123",
+	  "rso_name": "Tech Innovators Club",
+	  "university_ID": 5
+	}
+	
+	{
+		"success": true,
+		"rso": {
+			"RSO_ID": 1,
+			"name": "Tech Innovators Club",
+			"university_ID": 5,
+			"status": "inactive",
+			"created_at": "2025-04-07 14:48:59",
+			"admin_ID": 1
+		},
+		"error": ""
+	}
+
+createComment:
+	{
+	  "username": "john_doe",
+	  "password": "securepassword123",
+	  "event_ID": 1,
+	  "text": "This is a great event! Highly recommend attending.",
+	  "rating": 5
+	}
+	
+	{
+		"success": true,
+		"comment": {
+			"comment_ID": 1,
+			"event_ID": 1,
+			"user_ID": 1,
+			"text": "This is a great event! Highly recommend attending.",
+			"rating": 5,
+			"timestamp": "2025-04-07 14:52:52"
+		},
+		"error": ""
+	}
+	
+createLocation:
+	{
+	  "name": "New Campus Building",
+	  "latitude": 25.774,
+	  "longitude": -80.194
+	}
+
+	{
+		"success": true,
+		"location": {
+			"location_ID": 1,
+			"name": "New Campus Building",
+			"latitude": 25.774,
+			"longitude": -80.194
+		},
+		"error": ""
+	}
+	
+fetchEvents:
+	{
+	  "ISA_type": "Public" 
+	}
+
+	{
+		"success": true,
+		"events": [
+			{
+				"event_ID": 1,
+				"name": "Annual Tech Symposium",
+				"event_category": "Technology",
+				"description": "A gathering of industry leaders and innovators to discuss the latest trends in technology.",
+				"event_time": "10:00:00",
+				"event_date": "2025-06-01",
+				"contact_phone": "987-654-3210",
+				"contact_email": "events@techsymposium.com",
+				"location_ID": 3,
+				"university_ID": 5,
+				"ISA_type": "Public",
+				"created_at": "2025-04-07 14:44:15",
+				"created_by_UID": 1
+			}
+		],
+		"error": ""
+	}
+	
+fetchComments:
+	{
+	  "event_ID": 1
+	}
+
+	{
+		"success": true,
+		"comments": [
+			{
+				"comment_ID": 1,
+				"event_ID": 1,
+				"user_ID": 1,
+				"text": "This is a great event! Highly recommend attending.",
+				"rating": 5,
+				"timestamp": "2025-04-07 14:52:52"
+			}
+		],
+		"error": ""
+	}
+
+fetchLocation:
+	{
+	  "location_ID": 1
+	}
+
+	{
+		"success": true,
+		"location": {
+			"location_ID": 1,
+			"name": "New Campus Building",
+			"latitude": 25.774,
+			"longitude": -80.194
+		},
+		"error": ""
+	}
+
+
+
+	
