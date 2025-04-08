@@ -33,6 +33,8 @@
 				"id" => $row['UID'],
 				"username" => $row['username'],
 				"password" => $row['password'],
+				"name" => $row['name'],
+				"user_type" => $row['user_type'],
 				"university_ID" => $row['university_ID'],
 				"error" => ""
 			];
@@ -44,6 +46,8 @@
 				"id" => 0,
 				"username" => "",
 				"password" => "",
+				"name" => "",
+				"user_type" => "",
 				"university_ID" => "",
 				"error" => ""
 			];

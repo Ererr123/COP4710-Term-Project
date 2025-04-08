@@ -6,10 +6,11 @@
 	
 	$username = $data['username'] ?? '';
 	$name = $data['name'] ?? '';
+	$user_type = $data['role'];
 	$password = $data['password'] ?? '';
 	$university_ID = $data['university_ID'] ?? 0;
 	
-	if (empty($username) || empty($password) || empty($name) || empty($university_ID)) {
+	if (empty($username) || empty($password) || empty($name) || empty($user_type) || empty($university_ID)) {
 		http_response_code(400);
 		echo json_encode(["error" => "Fields cannot be empty"]);
 		exit();
@@ -24,8 +25,8 @@
 	}
 	else
 	{
-		$stmt = $conn->prepare("INSERT INTO Users (username, password, name, university_ID) VALUES (?, ?, ?, ?);");
-		$stmt->bind_param("sssi", $username, $password, $name, $university_ID);
+		$stmt = $conn->prepare("INSERT INTO Users (username, password, name, user_type, university_ID) VALUES (?, ?, ?, ?, ?);");
+		$stmt->bind_param("ssssi", $username, $password, $name, $user_type, $university_ID);
 
 		if( $stmt->execute() )
 		{
@@ -33,7 +34,7 @@
 			$stmt->close();
 
 			// Fetch the newly inserted row
-			$stmt2 = $conn->prepare("SELECT UID, username, university_ID FROM Users WHERE UID = ?");
+			$stmt2 = $conn->prepare("SELECT UID, username, name, user_type, university_ID FROM Users WHERE UID = ?");
 			$stmt2->bind_param("i", $newUserId);
 			$stmt2->execute();
 			$result = $stmt2->get_result();

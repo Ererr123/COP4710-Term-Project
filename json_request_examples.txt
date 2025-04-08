@@ -9,6 +9,8 @@ Login:
 		"id": 1,
 		"username": "john_doe",
 		"password": "securepassword123",
+		"name": "John Doe",
+		"user_type": "student",
 		"university_ID": 1,
 		"error": ""
 	}
@@ -18,6 +20,7 @@ Register:
 		"username":"asdfg",
 		"password":"asd",
 		"name":"asd",
+		"role":"student",
 		"university_ID": 1
 	}
 	
@@ -26,6 +29,8 @@ Register:
 		"user": {
 			"UID": 4,
 			"username": "asdfg",
+			"name":"asd",
+			"role":"student",
 			"university_ID": 1
 		},
 		"error": ""
