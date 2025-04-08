@@ -99,50 +99,56 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   
     // -------------------------------------------------
-    // Dynamic Event Loading using the fetchEvents API
-    // -------------------------------------------------
-    const eventsList = document.getElementById("events-list");
-    if (eventsList) {
-    // Call your fetchEvents API endpoint
-    fetch("fetchEvents.php")
-        .then(response => response.json())
-        .then(data => {
-        if (data.success) {
-            // Assume data.events is an array of event objects
-            data.events.forEach(event => {
-            // Create a new div for each event card
-            const eventCard = document.createElement("div");
-            eventCard.classList.add("event-card");
+// Dynamic Event Loading using fetchEvents API
+// -------------------------------------------------
+const eventsList = document.getElementById("events-list");
+if (eventsList) {
+  // Call the API with a POST request and send the ISA_type JSON payload.
+  fetch("fetchEvents.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ ISA_type: "Public" })  // Change to "RSO" or "Private" as needed.
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log("fetchEvents response:", data); // For debugging
+      if (data.success) {
+        // Loop through the events array from the API response.
+        data.events.forEach(event => {
+          const eventCard = document.createElement("div");
+          eventCard.classList.add("event-card");
 
-            // Populate the event card with event details
-            eventCard.innerHTML = `
-                <h3>${event.title}</h3>
-                <p><strong>Date:</strong> ${event.date}</p>
-                <p><strong>Time:</strong> ${event.time}</p>
-                <p><strong>Location:</strong> ${event.location}</p>
-                <p><strong>Description:</strong> ${event.description}</p>
-            `;
+          eventCard.innerHTML = `
+            <h3>${event.name}</h3>
+            <p><strong>Category:</strong> ${event.event_category}</p>
+            <p><strong>Date:</strong> ${event.event_date}</p>
+            <p><strong>Time:</strong> ${event.event_time}</p>
+            <p><strong>Location:</strong> ${event.location_ID}</p>
+            <p><strong>Description:</strong> ${event.description}</p>
+          `;
 
-            // Append the event card to the events list
-            eventsList.appendChild(eventCard);
+          eventsList.appendChild(eventCard);
 
-            // Add click event listener to open modal on card click
-            eventCard.addEventListener("click", function() {
-                const modal = document.getElementById("modal");
-                const modalBody = document.getElementById("modal-body");
-                modalBody.innerHTML = eventCard.innerHTML;
-                modal.style.display = "block";
-            });
-            });
-        } else {
-            eventsList.innerHTML = "<p>No events found.</p>";
-        }
-        })
-        .catch(error => {
-        console.error("Error fetching events:", error);
-        eventsList.innerHTML = "<p>Error loading events. Please try again later.</p>";
+          // Add event listener to open modal with event details.
+          eventCard.addEventListener("click", function() {
+            const modal = document.getElementById("modal");
+            const modalBody = document.getElementById("modal-body");
+            modalBody.innerHTML = eventCard.innerHTML;
+            modal.style.display = "block";
+          });
         });
-    }
+      } else {
+        eventsList.innerHTML = `<p>${data.error || "No events found."}</p>`;
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching events:", error);
+      eventsList.innerHTML = "<p>Error loading events. Please try again later.</p>";
+    });
+}
+
 
     // -------------------------------------------------
     // Modal Close Functionality
