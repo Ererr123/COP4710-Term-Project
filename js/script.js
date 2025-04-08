@@ -18,8 +18,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // Create form data to send
         const formData = new FormData(registerForm);
   
-        // Send data to the backend registration PHP script
-        fetch("register (1).php", {
+        // Send data to the backend registration PHP script (inside the 'api' folder)
+        fetch("api/register.php", {
           method: "POST",
           body: formData
         })
@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // Create form data to send
         const formData = new FormData(loginForm);
   
-        // Send data to the backend login PHP script
-        fetch("login (1).php", {
+        // Send data to the backend login PHP script (inside the 'api' folder)
+        fetch("api/login.php", {
           method: "POST",
           body: formData
         })
@@ -99,69 +99,110 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   
     // -------------------------------------------------
-// Dynamic Event Loading using fetchEvents API
-// -------------------------------------------------
-const eventsList = document.getElementById("events-list");
-if (eventsList) {
-  // Call the API with a POST request and send the ISA_type JSON payload.
-  fetch("fetchEvents.php", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ ISA_type: "Public" })  // Change to "RSO" or "Private" as needed.
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log("fetchEvents response:", data); // For debugging
-      if (data.success) {
-        // Loop through the events array from the API response.
-        data.events.forEach(event => {
-          const eventCard = document.createElement("div");
-          eventCard.classList.add("event-card");
-
-          eventCard.innerHTML = `
-            <h3>${event.name}</h3>
-            <p><strong>Category:</strong> ${event.event_category}</p>
-            <p><strong>Date:</strong> ${event.event_date}</p>
-            <p><strong>Time:</strong> ${event.event_time}</p>
-            <p><strong>Location:</strong> ${event.location_ID}</p>
-            <p><strong>Description:</strong> ${event.description}</p>
-          `;
-
-          eventsList.appendChild(eventCard);
-
-          // Add event listener to open modal with event details.
-          eventCard.addEventListener("click", function() {
-            const modal = document.getElementById("modal");
-            const modalBody = document.getElementById("modal-body");
-            modalBody.innerHTML = eventCard.innerHTML;
-            modal.style.display = "block";
+    // Dynamic Event Loading using fetchEvents API
+    // -------------------------------------------------
+    const eventsList = document.getElementById("events-list");
+    if (eventsList) {
+      // Call the API to fetch events (using the "Public" ISA_type; change as needed)
+      fetch("api/fetchEvents.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ ISA_type: "Public" })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("fetchEvents response:", data); // For debugging
+        if (data.success) {
+          // Loop through each event returned
+          data.events.forEach(event => {
+            const eventCard = document.createElement("div");
+            eventCard.classList.add("event-card");
+  
+            eventCard.innerHTML = `
+              <h3>${event.name}</h3>
+              <p><strong>Category:</strong> ${event.event_category}</p>
+              <p><strong>Date:</strong> ${event.event_date}</p>
+              <p><strong>Time:</strong> ${event.event_time}</p>
+              <p><strong>Location:</strong> ${event.location_ID}</p>
+              <p><strong>Description:</strong> ${event.description}</p>
+            `;
+  
+            eventsList.appendChild(eventCard);
+  
+            // Add click event listener to open modal with event details and comments
+            eventCard.addEventListener("click", function() {
+              const modal = document.getElementById("modal");
+              const modalBody = document.getElementById("modal-body");
+  
+              // Display event details
+              modalBody.innerHTML = eventCard.innerHTML;
+  
+              // Create a container for comments
+              const commentsContainer = document.createElement("div");
+              commentsContainer.id = "comments-container";
+              commentsContainer.innerHTML = "<h4>Comments</h4><div id='comments-list'></div>";
+              modalBody.appendChild(commentsContainer);
+  
+              // Get the event ID from the event object (adjust property name if needed)
+              const eventID = event.event_ID;
+  
+              // Fetch comments for this event from the backend (inside the 'api' folder)
+              fetch("api/fetchComments.php", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ event_ID: eventID })
+              })
+              .then(response => response.json())
+              .then(commentData => {
+                const commentsList = document.getElementById("comments-list");
+                if (commentData.success && commentData.comments.length > 0) {
+                  commentData.comments.forEach(comment => {
+                    const commentItem = document.createElement("p");
+                    // Adjust these keys based on your API (e.g., comment.author, comment.text)
+                    commentItem.innerHTML = `<strong>${comment.author}</strong>: ${comment.text}`;
+                    commentsList.appendChild(commentItem);
+                  });
+                } else {
+                  commentsList.innerHTML = "<p>No comments for this event.</p>";
+                }
+              })
+              .catch(error => {
+                console.error("Error fetching comments:", error);
+                const commentsList = document.getElementById("comments-list");
+                commentsList.innerHTML = "<p>Error loading comments.</p>";
+              });
+              
+              // Open the modal
+              modal.style.display = "block";
+            });
           });
-        });
-      } else {
-        eventsList.innerHTML = `<p>${data.error || "No events found."}</p>`;
-      }
-    })
-    .catch(error => {
-      console.error("Error fetching events:", error);
-      eventsList.innerHTML = "<p>Error loading events. Please try again later.</p>";
-    });
-}
-
-
+        } else {
+          eventsList.innerHTML = `<p>${data.error || "No events found."}</p>`;
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching events:", error);
+        eventsList.innerHTML = "<p>Error loading events. Please try again later.</p>";
+      });
+    }
+  
     // -------------------------------------------------
     // Modal Close Functionality
     // -------------------------------------------------
+    const modal = document.getElementById("modal");
     const closeButton = document.querySelector(".close-button");
-    if (closeButton) {
+  
+    if (modal && closeButton) {
       closeButton.addEventListener("click", function() {
-        document.getElementById("modal").style.display = "none";
+        modal.style.display = "none";
       });
     }
-    
+  
     window.addEventListener("click", function(event) {
-      const modal = document.getElementById("modal");
       if (modal && event.target === modal) {
         modal.style.display = "none";
       }

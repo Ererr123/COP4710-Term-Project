@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Event - College Event Website</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Common Header -->
+  <header>
+    <h1>College Event Website</h1>
+    <nav>
+      <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Create New Event</h2>
+    <!-- Event creation form -->
+    <form id="create-event-form">
+      <label for="event-name">Event Name:</label>
+      <input type="text" id="event-name" name="name" required>
+      
+      <label for="event-category">Category:</label>
+      <input type="text" id="event-category" name="event_category" required>
+      
+      <label for="event-description">Description:</label>
+      <textarea id="event-description" name="description" required></textarea>
+      
+      <label for="event-date">Date:</label>
+      <input type="date" id="event-date" name="event_date" required>
+      
+      <label for="event-time">Time:</label>
+      <input type="time" id="event-time" name="event_time" required>
+      
+      <label for="location">Location:</label>
+      <input type="text" id="location" name="location_ID" required>
+      
+      <label for="contact-phone">Contact Phone:</label>
+      <input type="text" id="contact-phone" name="contact_phone">
+      
+      <label for="contact-email">Contact Email:</label>
+      <input type="email" id="contact-email" name="contact_email">
+      
+      <!-- Optionally, you can preset ISA_type (adjust if necessary) -->
+      <input type="hidden" name="ISA_type" value="Public">
+
+      <button type="submit">Create Event</button>
+    </form>
+    <div id="create-event-result"></div>
+  </main>
+
+  <!-- Common Footer -->
+  <footer>
+    <p>&copy; 2025 College Event Website</p>
+  </footer>
+
+  <!-- Event Creation Script -->
+  <script>
+    // --- Role Check: Only allow Admin/Super Admin access ---
+    const userRole = localStorage.getItem("userRole");
+    if (!(userRole === "admin" || userRole === "superadmin")) {
+      alert("Unauthorized. Only admin users can create events.");
+      window.location.href = "dashboard.html";
+    }
+
+    // Handle event creation form submission via AJAX
+    document.getElementById("create-event-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      fetch("api/createEvent.php", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        const resultDiv = document.getElementById("create-event-result");
+        if (data.success) {
+          resultDiv.innerHTML = "<p>Event created successfully!</p>";
+          e.target.reset();
+        } else {
+          resultDiv.innerHTML = "<p>Error: " + data.error + "</p>";
+        }
+      })
+      .catch(err => {
+        console.error("Error creating event:", err);
+        document.getElementById("create-event-result").innerHTML = "<p>Error creating event. Please try again.</p>";
+      });
+    });
+  </script>
+</body>
+</html>
