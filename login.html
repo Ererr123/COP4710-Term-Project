@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login/Register - College Event Website</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Common Header -->
+  <header>
+    <h1>College Event Website</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login/Register</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Page Specific Content -->
+  <main>
+    <section id="auth">
+      <!-- Login Form -->
+      <h2>Login</h2>
+      <form id="login-form" method="post">
+        <label for="login-email">Email:</label>
+        <input type="email" id="login-email" name="email" required>
+        
+        <label for="login-password">Password:</label>
+        <input type="password" id="login-password" name="password" required>
+        
+        <button type="submit">Login</button>
+      </form>
+
+      <!-- Registration Form -->
+      <h2>Register</h2>
+      <form id="register-form" method="post">
+        <label for="reg-email">Email:</label>
+        <input type="email" id="reg-email" name="email" required>
+        
+        <label for="reg-password">Password:</label>
+        <input type="password" id="reg-password" name="password" required>
+        
+        <label for="reg-confirm-password">Confirm Password:</label>
+        <input type="password" id="reg-confirm-password" name="confirm-password" required>
+
+        <label for="reg-role">Role:</label>
+        <select id="reg-role" name="role" required>
+          <option value="">-- Select Role --</option>
+          <option value="student">Student</option>
+          <option value="admin">Admin</option>
+          <option value="superadmin">Super Admin</option>
+        </select>
+        
+        <button type="submit">Register</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Common Footer -->
+  <footer>
+    <p>&copy; 2025 College Event Website</p>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
