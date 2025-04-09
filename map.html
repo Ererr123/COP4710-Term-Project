@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Location</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 500px; width: 100%; }
+    .info {
+      margin-top: 10px;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Click on the Map to Select a Location</h2>
+  <div id="map"></div>
+  <div class="info">
+    <p><strong>Latitude:</strong> <span id="lat">-</span></p>
+    <p><strong>Longitude:</strong> <span id="lng">-</span></p>
+    <p><strong>Location Name:</strong> <span id="locationName">-</span></p>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    let map, marker;
+
+    function updateInfo(lat, lng, name = '-') {
+      document.getElementById('lat').textContent = lat.toFixed(6);
+      document.getElementById('lng').textContent = lng.toFixed(6);
+      document.getElementById('locationName').textContent = name;
+    }
+
+    async function reverseGeocode(lat, lng) {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.display_name || "Unknown location";
+    }
+
+    function onMapClick(e) {
+      const { lat, lng } = e.latlng;
+      if (marker) map.removeLayer(marker);
+      marker = L.marker([lat, lng]).addTo(map);
+      updateInfo(lat, lng);
+
+      reverseGeocode(lat, lng).then(locationName => {
+        updateInfo(lat, lng, locationName);
+        
+        // Send back to parent window
+        if (window.opener && !window.opener.closed) {
+          const inputField = window.opener.document.getElementById("locationInput");
+          if (inputField) inputField.value = locationName;
+        }
+        
+        window.close(); // Close this popup
+      });
+    }
+
+    function initMap(lat, lng) {
+      map = L.map('map').setView([lat, lng], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      map.on('click', onMapClick);
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => initMap(pos.coords.latitude, pos.coords.longitude),
+        () => initMap(40.7128, -74.0060)
+      );
+    } else {
+      initMap(40.7128, -74.0060);
+    }
+  </script>
+</body>
+</html>
+
+
