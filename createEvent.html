@@ -38,8 +38,8 @@
       <label for="event-time">Time:</label>
       <input type="time" id="event-time" name="event_time" required />
 
-      <label for="location">Location (ID):</label>
-      <input type="text" id="location" name="location_ID" required />
+      <label for="location">Location:</label>
+      <input type="text" id="location" name="location" required />
       <button id="selectLocationBtn" type="button" onclick="openMapPopup()">Choose on Map</button>
 
       <label for="contact-phone">Contact Phone:</label>
@@ -65,21 +65,21 @@
     function openMapPopup() {
       window.open('map-popup.html', 'MapPopup', 'width=700,height=600');
     }
-
-    // Map integration
+  
+    // Receive address from map popup
     window.addEventListener('message', function(event) {
       if (typeof event.data === 'string') {
         document.getElementById('location').value = event.data;
       }
     }, false);
-
+  
     // Role check
     const userRole = localStorage.getItem("userRole");
     if (!(userRole === "admin" || userRole === "superadmin")) {
       alert("Unauthorized. Only admin users can create events.");
       window.location.href = "dashboard.html";
     }
-
+  
     // Populate user data
     const userDataStr = localStorage.getItem("user");
     if (userDataStr) {
@@ -91,45 +91,67 @@
         console.error("Error parsing user data:", e);
       }
     }
-
-    // Form submission with JSON body
-    document.getElementById("create-event-form").addEventListener("submit", function (e) {
+  
+    // Handle form submission
+    document.getElementById("create-event-form").addEventListener("submit", async function (e) {
       e.preventDefault();
-
-      const eventData = {
-        event_name: document.getElementById("event-name").value,
-        event_category: document.getElementById("event-category").value,
-        description: document.getElementById("event-description").value,
-        event_date: document.getElementById("event-date").value,
-        event_time: document.getElementById("event-time").value,
-        location_ID: parseInt(document.getElementById("location").value),
-        contact_phone: document.getElementById("contact-phone").value,
-        contact_email: document.getElementById("contact-email").value,
-        ISA_type: document.getElementById("ISA_type").value,
-        university_ID: parseInt(document.getElementById("university_ID").value),
-        created_by_UID: null,
-      };
-
-      fetch("api/createEvent.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(eventData)
-      })
-      .then(res => res.json())
-      .then(data => {
-        const resultDiv = document.getElementById("create-event-result");
-        if (data.success) {
+      const resultDiv = document.getElementById("create-event-result");
+      resultDiv.innerHTML = "⏳ Creating location...";
+  
+      const address = document.getElementById("location").value.trim();
+  
+      try {
+        // Step 1: Create the location
+        const locRes = await fetch("api/createLocation.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address })
+        });
+  
+        const locData = await locRes.json();
+  
+        if (!locData.success) {
+          resultDiv.innerHTML = `<p>❌ Error creating location: ${locData.error}</p>`;
+          return;
+        }
+  
+        const location_ID = locData.location.location_ID;
+  
+        // Step 2: Submit the event with location_ID
+        const eventData = {
+          event_name: document.getElementById("event-name").value,
+          event_category: document.getElementById("event-category").value,
+          description: document.getElementById("event-description").value,
+          event_date: document.getElementById("event-date").value,
+          event_time: document.getElementById("event-time").value,
+          location_ID: location_ID,
+          contact_phone: document.getElementById("contact-phone").value,
+          contact_email: document.getElementById("contact-email").value,
+          ISA_type: document.getElementById("ISA_type").value,
+          university_ID: parseInt(document.getElementById("university_ID").value),
+          created_by_UID: parseInt(document.getElementById("created_by_UID").value)
+        };
+  
+        const eventRes = await fetch("api/createEvent.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(eventData)
+        });
+  
+        const eventResult = await eventRes.json();
+  
+        if (eventResult.success) {
           resultDiv.innerHTML = "<p>✅ Event created successfully!</p>";
           document.getElementById("create-event-form").reset();
         } else {
-          resultDiv.innerHTML = "<p>❌ Error: " + (data.error || "Unknown error") + "</p>";
+          resultDiv.innerHTML = `<p>❌ Error creating event: ${eventResult.error}</p>`;
         }
-      })
-      .catch(err => {
-        console.error("Event creation error:", err);
-        document.getElementById("create-event-result").innerHTML = "<p>❌ Error creating event. Please try again.</p>";
-      });
+      } catch (err) {
+        console.error("Error creating event:", err);
+        resultDiv.innerHTML = "<p>❌ An unexpected error occurred. Please try again.</p>";
+      }
     });
   </script>
+  
 </body>
 </html>

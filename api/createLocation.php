@@ -4,14 +4,12 @@
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Get inputs
-$name = $data['name'] ?? '';
-$latitude = $data['latitude'] ?? 0;
-$longitude = $data['longitude'] ?? 0;
+$address = $data['address'] ?? '';
 
 // Validate required fields
-if (empty($name) || !is_numeric($latitude) || !is_numeric($longitude)) {
+if (empty($address)) {
     http_response_code(400);
-    echo json_encode(["error" => "All fields are required and latitude/longitude must be numbers"]);
+    echo json_encode(["error" => "All fields are required"]);
     exit();
 }
 
@@ -24,15 +22,15 @@ if ($conn->connect_error) {
 }
 
 // Insert the new location
-$stmt = $conn->prepare("INSERT INTO Location (name, latitude, longitude) VALUES (?, ?, ?)");
-$stmt->bind_param("sdd", $name, $latitude, $longitude);
+$stmt = $conn->prepare("INSERT INTO Location (address) VALUES (?)");
+$stmt->bind_param("s", $address);
 
 if ($stmt->execute()) {
     $newLocationId = $stmt->insert_id;
     $stmt->close();
 
     // Fetch the newly inserted location
-    $stmt2 = $conn->prepare("SELECT location_ID, name, latitude, longitude FROM Location WHERE location_ID = ?");
+    $stmt2 = $conn->prepare("SELECT location_ID, address FROM Location WHERE location_ID = ?");
     $stmt2->bind_param("i", $newLocationId);
     $stmt2->execute();
     $result = $stmt2->get_result();
