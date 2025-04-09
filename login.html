@@ -17,9 +17,22 @@
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
         <li><a href="login.html">Login/Register</a></li>
+        <li id="logoutBtn" style="display: none; margin-left: auto;"><a href="#">Logout</a></li>
       </ul>
     </nav>
   </header>
+
+  <script>
+    // Show logout if "user" exists in localStorage
+    if (localStorage.getItem('user')) {
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+      document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = 'login.html';
+      });
+    }
+  </script>
 
   <!-- Page Specific Content -->
   <main>
