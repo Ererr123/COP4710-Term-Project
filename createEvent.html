@@ -42,7 +42,19 @@
       
       <label for="location">Location:</label>
       <input type="text" id="location" name="location_ID" required>
-      
+      <button id="selectLocationBtn" onclick="openMapPopup()">Choose on Map</button>
+      <script>
+        function openMapPopup() {
+          window.open('map-popup.html', 'MapPopup', 'width=700,height=600');
+        }
+    
+        // Listen for messages from the popup
+        window.addEventListener('message', function(event) {
+          if (typeof event.data === 'string') {
+            document.getElementById('location').value = event.data;
+          }
+        }, false);
+      </script>
       <label for="contact-phone">Contact Phone:</label>
       <input type="text" id="contact-phone" name="contact_phone">
       
@@ -98,3 +110,4 @@
   </script>
 </body>
 </html>
+
