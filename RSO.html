@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - College Event Website</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>College Event Website</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login/Register</a></li>
+        <li id="logoutBtn" style="display: none; margin-left: auto;"><a href="#">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <script>
+    // Show logout if "user" exists in localStorage
+    if (localStorage.getItem('user')) {
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+      document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = 'login.html';
+      });
+    }
+  </script>
+  <main>
+    <div id="rso-container"></div>
+
+  </main>
+  <footer>
+    <p>&copy; 2025 College Event Website</p>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('rso-container');
+
+    // Fetch RSOs
+    fetch('api/fetchRSOs.php')
+        .then(res => res.json())
+        .then(async data => {
+            if (data.success && Array.isArray(data.rsos)) {
+                for (const rso of data.rsos) {
+                    const universityName = await fetchUniversityName(rso.university_ID);
+                    const adminName = await fetchAdminName(rso.admin_ID);
+
+                    const user = JSON.parse(localStorage.getItem("user"));
+const isMember = await checkMembership(user.id, rso.RSO_ID);
+const memberCount = await fetchMemberCount(rso.RSO_ID); // <-- New line
+
+const rsoElement = document.createElement('div');
+rsoElement.classList.add('rso-item');
+rsoElement.innerHTML = `
+    <h3>${rso.name}</h3>
+    <p><strong>University:</strong> ${universityName}</p>
+    <p><strong>Admin:</strong> ${adminName}</p>
+    <p><strong>Status:</strong> ${rso.status}</p>
+    <p><strong>Members:</strong> <span class="member-count">${memberCount}</span></p>
+    <p><strong>Created At:</strong> ${rso.created_at}</p>
+    ${!isMember ? `<button class="join-btn" data-rso-id="${rso.RSO_ID}">Join RSO</button>` : `<p><em>You are already a member of this RSO.</em></p>`}
+    <div class="join-result" style="margin-top: 5px;"></div>
+    <hr />
+`;
+
+container.appendChild(rsoElement);
+
+// Join button event listener (unchanged)
+if (!isMember) {
+    const joinBtn = rsoElement.querySelector('.join-btn');
+    const resultDiv = rsoElement.querySelector('.join-result');
+    const memberCountEl = rsoElement.querySelector('.member-count');
+
+    joinBtn.addEventListener('click', async () => {
+        const payload = {
+            user_ID: user.id,
+            RSO_ID: parseInt(joinBtn.dataset.rsoId, 10)
+        };
+
+        try {
+            const res = await fetch("api/joinRSO.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                resultDiv.innerHTML = `<p style="color: green;">Joined successfully!</p>`;
+                joinBtn.style.display = "none";
+
+                // 🔄 Update member count
+                const newCount = await fetchMemberCount(payload.RSO_ID);
+                memberCountEl.textContent = newCount;
+            } else {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `<p style="color: red;">Error joining RSO. Please try again.</p>`;
+            console.error("Join RSO Error:", err);
+        }
+    });
+}
+
+
+                    
+
+                }
+            } else {
+                container.innerHTML = `<p>No RSOs found or an error occurred: ${data.error}</p>`;
+            }
+        })
+        .catch(err => {
+            container.innerHTML = `<p>Error fetching RSOs: ${err.message}</p>`;
+        });
+
+    // Helper to fetch university name
+    async function fetchUniversityName(universityID) {
+        try {
+            const res = await fetch('api/fetchUniversity.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ university_ID: universityID })
+            });
+            const data = await res.json();
+            return data.success ? data.university.name : 'Unknown University';
+        } catch (err) {
+            return 'Error fetching university';
+        }
+    }
+
+    // Helper to fetch admin name
+    async function fetchAdminName(adminID) {
+        try {
+            const res = await fetch('api/fetchUser.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ UID: adminID })
+            });
+            const data = await res.json();
+            return data.success ? `${data.user.name}` : 'Unknown Admin';
+        } catch (err) {
+            return 'Error fetching admin';
+        }
+    }
+});
+
+async function checkMembership(userID, rsoID) {
+    try {
+        const res = await fetch("api/isMemberRSO.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_ID: userID, RSO_ID: rsoID })
+        });
+
+        const data = await res.json();
+        return data.success && data.is_member === true;
+    } catch (err) {
+        console.error("Error checking membership:", err);
+        return false; // Assume not a member on error
+    }
+}
+
+async function fetchMemberCount(rsoID) {
+    try {
+        const res = await fetch("api/numofMembers.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ RSO_ID: rsoID })
+        });
+
+        const data = await res.json();
+        return data.success ? data.member_count : "Unknown";
+    } catch (err) {
+        console.error("Error fetching member count:", err);
+        return "Error";
+    }
+}
+
+
+
+  </script>
+</body>
+</html>

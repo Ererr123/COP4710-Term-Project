@@ -4,13 +4,13 @@
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Get inputs
-$username = $data['username'] ?? '';
-$password = $data['password'] ?? '';
-$rso_name = $data['rso_name'] ?? '';
+
+$rso_name = $data['name'] ?? '';
 $university_ID = $data['university_ID'] ?? 0;
+$admin_ID = $data['admin_ID'] ?? 0;
 
 // Validate required fields
-if (empty($username) || empty($password) || empty($rso_name) || empty($university_ID)) {
+if (empty($rso_name) || empty($university_ID)) {
     http_response_code(400);
     echo json_encode(["error" => "Fields cannot be empty"]);
     exit();
@@ -23,23 +23,6 @@ if ($conn->connect_error) {
     echo json_encode(["error" => "Could not connect to database"]);
     exit();
 }
-
-// Find the user who will be the admin of the RSO
-$stmt = $conn->prepare("SELECT UID FROM Users WHERE username = ? AND password = ?");
-$stmt->bind_param("ss", $username, $password);
-$stmt->execute();
-$user_result = $stmt->get_result();
-$stmt->close();
-
-// Check if the user exists
-if ($user_result->num_rows === 0) {
-    http_response_code(401);
-    echo json_encode(["error" => "Invalid username or password"]);
-    exit();
-}
-
-$user = $user_result->fetch_assoc();
-$admin_ID = $user['UID'];
 
 // Insert the new RSO
 $stmt = $conn->prepare("INSERT INTO RSOs (name, university_ID, admin_ID) VALUES (?, ?, ?)");

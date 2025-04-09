@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create University - College Event Website</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Common Header -->
+  <header>
+    <h1>College Event Website</h1>
+    <nav>
+      <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Create New University</h2>
+    <!-- Event creation form -->
+    <form id="create-university-form">
+      <label for="university-name">University Name:</label>
+      <input type="text" id="university-name" name="name" required>
+      
+      <label for="location_ID">Location:</label>
+      <input type="number" id="location_ID" name="location_ID" required>
+      
+      <label for="description">Description:</label>
+      <textarea id="description" name="description" required></textarea>
+      
+      <label for="num_of_students">Number of students:</label>
+      <input type="number" id="num_of_students" name="num_of_students" required>
+
+      <button type="submit">Create University</button>
+    </form>
+    <div id="create-university-result"></div>
+  </main>
+
+  <!-- Common Footer -->
+  <footer>
+    <p>&copy; 2025 College Event Website</p>
+  </footer>
+
+  <!-- Event Creation Script -->
+  <script>
+    // --- Role Check: Only allow Admin/Super Admin access ---
+    const userRole = localStorage.getItem("userRole");
+    if (!(userRole === "admin" || userRole === "superadmin")) {
+      alert("Unauthorized. Only admin users can create events.");
+      window.location.href = "dashboard.html";
+    }
+
+    // Handle event creation form submission via AJAX
+    document.getElementById("create-university-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("university-name").value.trim();
+  const location_ID = parseInt(document.getElementById("location_ID").value, 10);
+  const description = document.getElementById("description").value.trim();
+  const num_of_students = parseInt(document.getElementById("num_of_students").value, 10);
+
+  const payload = {
+    name,
+    location_ID,
+    description,
+    num_of_students
+  };
+
+  fetch("api/createUniversity.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(response => response.json())
+  .then(data => {
+    const resultDiv = document.getElementById("create-university-result");
+    if (data.success) {
+      resultDiv.innerHTML = "<p>University created successfully!</p>";
+      e.target.reset();
+    } else {
+      resultDiv.innerHTML = "<p>Error: " + data.error + "</p>";
+    }
+  })
+  .catch(err => {
+    console.error("Error creating university:", err);
+    document.getElementById("create-university-result").innerHTML = "<p>Error creating university. Please try again.</p>";
+  });
+});
+
+  </script>
+</body>
+</html>

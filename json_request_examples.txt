@@ -196,6 +196,22 @@ fetchLocation:
 		"error": ""
 	}
 
+fetchRSOs:
+	No Input
 
+	{
+		"success": true,
+		"rsos": [
+			{
+				"RSO_ID": "1",
+				"name": "Tech Innovators Club",
+				"university_ID": "5",
+				"created_at": "2025-04-07 14:48:59",
+				"admin_ID": "1",
+				"status": "inactive"
+			}
+		],
+		"error": ""
+	}
 
 	
