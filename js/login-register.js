@@ -97,6 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const { id, username, name, user_type, university_ID } = result;
                 const userInfo = { id, username, name, user_type, university_ID };
                 localStorage.setItem("user", JSON.stringify(userInfo));
+                localStorage.setItem("userRole", user_type);
 
                 messageBoxLogin.textContent = "✅ Login successful!";
                 messageBoxLogin.style.color = "green";
