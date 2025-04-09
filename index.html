@@ -10,13 +10,15 @@
   <header>
     <h1>College Event Website</h1>
     <nav>
-      <ul>
+      <ul id="nav-links">
         <li><a href="index.html">Home</a></li>
         <li><a href="events.html">Events</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
         <li><a href="login.html">Login/Register</a></li>
-        <li id="logoutBtn" style="display: none; margin-left: auto;"><a href="#">Logout</a></li>
+        <li id="logoutBtn" style="display: none; margin-left: auto;">
+          <a href="#">Logout</a>
+        </li>
       </ul>
     </nav>
   </header>
@@ -31,6 +33,19 @@
         window.location.href = 'login.html';
       });
     }
+  
+    // Conditionally add a "Dashboard" link for admin or superadmin users
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "admin" || userRole === "superadmin") {
+      const navLinks = document.getElementById("nav-links");
+      // Create Dashboard list item
+      const dashboardLi = document.createElement("li");
+      const dashboardLink = document.createElement("a");
+      dashboardLink.href = "dashboard.html";
+      dashboardLink.textContent = "Dashboard";
+      dashboardLi.appendChild(dashboardLink);
+      navLinks.appendChild(dashboardLi);
+    }
   </script>
 
   <main>
@@ -43,13 +58,13 @@
     <!-- Events Preview Section -->
     <section id="events-preview">
       <h2>Upcoming Events</h2>
-      <!-- Placeholder for event cards -->
+      <!-- Placeholder for event cards (to be dynamically loaded later) -->
       <div class="event">
         <h3>Event Title</h3>
         <p>Date, Time, Location</p>
         <p>Short description of the event...</p>
       </div>
-      <!-- You can duplicate the event div for more placeholders -->
+      <!-- You can duplicate this block for additional placeholders -->
     </section>
   </main>
 

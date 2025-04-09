@@ -18,13 +18,6 @@ $location_ID = $data['location_ID'] ?? 0;
 $ISA_type = $data['ISA_type'] ?? '';
 $university_ID = $data['university_ID'] ?? 0;
 
-// Validate required fields
-if (empty($username) || empty($password) || empty($event_name) || empty($ISA_type) || empty($university_ID)) {
-    http_response_code(400);
-    echo json_encode(["error" => "Fields cannot be empty"]);
-    exit();
-}
-
 // Connect to database
 $conn = new mysqli("localhost", "root", "", "COP4710");
 if ($conn->connect_error) {
@@ -33,27 +26,10 @@ if ($conn->connect_error) {
     exit();
 }
 
-// Find the user who created the event (assuming the user exists)
-$stmt = $conn->prepare("SELECT UID FROM Users WHERE username = ? AND password = ?");
-$stmt->bind_param("ss", $username, $password);
-$stmt->execute();
-$user_result = $stmt->get_result();
-$stmt->close();
-
-// Check if user exists
-if ($user_result->num_rows === 0) {
-    http_response_code(401);
-    echo json_encode(["error" => "Invalid username or password"]);
-    exit();
-}
-
-$user = $user_result->fetch_assoc();
-$created_by_UID = $user['UID'];
-
 // Insert new event
-$stmt = $conn->prepare("INSERT INTO Events (name, event_category, description, event_time, event_date, contact_phone, contact_email, location_ID, university_ID, ISA_type, created_by_UID) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("ssssssssisi", $event_name, $event_category, $description, $event_time, $event_date, $contact_phone, $contact_email, $location_ID, $university_ID, $ISA_type, $created_by_UID);
+$stmt = $conn->prepare("INSERT INTO Events (name, event_category, description, event_time, event_date, contact_phone, contact_email, location_ID, university_ID, ISA_type) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("ssssssssis", $event_name, $event_category, $description, $event_time, $event_date, $contact_phone, $contact_email, $location_ID, $university_ID, $ISA_type);
 
 if ($stmt->execute()) {
     $newEventId = $stmt->insert_id;

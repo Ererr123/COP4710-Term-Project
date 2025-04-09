@@ -1,17 +1,15 @@
 <?php
-
 // Decode the input JSON
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Get inputs
-$username = $data['username'] ?? '';
-$password = $data['password'] ?? '';
 $event_ID = $data['event_ID'] ?? 0;
-$text = $data['text'] ?? '';
-$rating = $data['rating'] ?? 0;
+$user_ID  = $data['user_ID'] ?? 0;
+$text     = $data['text'] ?? '';
+$rating   = $data['rating'] ?? 0;
 
 // Validate required fields
-if (empty($username) || empty($password) || empty($event_ID) || empty($text) || empty($rating)) {
+if (empty($user_ID) || empty($event_ID) || empty($text) || empty($rating)) {
     http_response_code(400);
     echo json_encode(["error" => "All fields are required"]);
     exit();
@@ -32,24 +30,7 @@ if ($conn->connect_error) {
     exit();
 }
 
-// Find the user who is posting the comment
-$stmt = $conn->prepare("SELECT UID FROM Users WHERE username = ? AND password = ?");
-$stmt->bind_param("ss", $username, $password);
-$stmt->execute();
-$user_result = $stmt->get_result();
-$stmt->close();
-
-// Check if the user exists
-if ($user_result->num_rows === 0) {
-    http_response_code(401);
-    echo json_encode(["error" => "Invalid username or password"]);
-    exit();
-}
-
-$user = $user_result->fetch_assoc();
-$user_ID = $user['UID'];
-
-// Insert the new comment
+// Insert the new comment into Comments table
 $stmt = $conn->prepare("INSERT INTO Comments (event_ID, user_ID, text, rating) VALUES (?, ?, ?, ?)");
 $stmt->bind_param("iisi", $event_ID, $user_ID, $text, $rating);
 
@@ -57,23 +38,39 @@ if ($stmt->execute()) {
     $newCommentId = $stmt->insert_id;
     $stmt->close();
 
-    // Fetch the newly inserted comment
-    $stmt2 = $conn->prepare("SELECT comment_ID, event_ID, user_ID, text, rating, timestamp FROM Comments WHERE comment_ID = ?");
+    // Fetch the newly inserted comment along with the user's username using a JOIN
+    $stmt2 = $conn->prepare("
+      SELECT c.comment_ID,
+             c.event_ID,
+             c.user_ID,
+             c.text,
+             c.rating,
+             c.timestamp,
+             u.username AS author
+      FROM Comments c
+      JOIN Users u ON c.user_ID = u.UID
+      WHERE c.comment_ID = ?
+    ");
     $stmt2->bind_param("i", $newCommentId);
     $stmt2->execute();
     $result = $stmt2->get_result();
 
     if ($comment = $result->fetch_assoc()) {
-        sendResultInfoAsJson(json_encode(["success" => true, "comment" => $comment, "error" => ""]));
+        sendResultInfoAsJson(json_encode([
+            "success" => true,
+            "comment" => $comment,
+            "error" => ""
+        ]));
     } else {
-        sendResultInfoAsJson(json_encode(["success" => false, "error" => "Comment created but not found"]));
+        sendResultInfoAsJson(json_encode([
+            "success" => false,
+            "error" => "Comment created but not found"
+        ]));
     }
-
     $stmt2->close();
 } else {
     $stmt->close();
-    $retValue = ["error" => $stmt->error];
-    sendResultInfoAsJson(json_encode($retValue));
+    echo json_encode(["error" => $conn->error]);
 }
 
 $conn->close();
@@ -84,5 +81,4 @@ function sendResultInfoAsJson($obj)
     header('Content-type: application/json');
     echo $obj;
 }
-
 ?>

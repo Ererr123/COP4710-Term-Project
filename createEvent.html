@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create Event - College Event Website</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <!-- Common Header -->
   <header>
     <h1>College Event Website</h1>
     <nav>
@@ -23,91 +22,114 @@
 
   <main>
     <h2>Create New Event</h2>
-    <!-- Event creation form -->
     <form id="create-event-form">
       <label for="event-name">Event Name:</label>
-      <input type="text" id="event-name" name="name" required>
-      
+      <input type="text" id="event-name" name="event_name" required />
+
       <label for="event-category">Category:</label>
-      <input type="text" id="event-category" name="event_category" required>
-      
+      <input type="text" id="event-category" name="event_category" required />
+
       <label for="event-description">Description:</label>
       <textarea id="event-description" name="description" required></textarea>
-      
+
       <label for="event-date">Date:</label>
-      <input type="date" id="event-date" name="event_date" required>
-      
+      <input type="date" id="event-date" name="event_date" required />
+
       <label for="event-time">Time:</label>
-      <input type="time" id="event-time" name="event_time" required>
-      
-      <label for="location">Location:</label>
-      <input type="text" id="location" name="location_ID" required>
-      <button id="selectLocationBtn" onclick="openMapPopup()">Choose on Map</button>
-      <script>
-        function openMapPopup() {
-          window.open('map-popup.html', 'MapPopup', 'width=700,height=600');
-        }
-    
-        // Listen for messages from the popup
-        window.addEventListener('message', function(event) {
-          if (typeof event.data === 'string') {
-            document.getElementById('location').value = event.data;
-          }
-        }, false);
-      </script>
+      <input type="time" id="event-time" name="event_time" required />
+
+      <label for="location">Location (ID):</label>
+      <input type="text" id="location" name="location_ID" required />
+      <button id="selectLocationBtn" type="button" onclick="openMapPopup()">Choose on Map</button>
+
       <label for="contact-phone">Contact Phone:</label>
-      <input type="text" id="contact-phone" name="contact_phone">
-      
+      <input type="text" id="contact-phone" name="contact_phone" />
+
       <label for="contact-email">Contact Email:</label>
-      <input type="email" id="contact-email" name="contact_email">
-      
-      <!-- Optionally, you can preset ISA_type (adjust if necessary) -->
-      <input type="hidden" name="ISA_type" value="Public">
+      <input type="email" id="contact-email" name="contact_email" />
+
+      <input type="hidden" id="ISA_type" name="ISA_type" value="Public" />
+      <input type="hidden" id="university_ID" name="university_ID" />
+      <input type="hidden" id="created_by_UID" name="created_by_UID" />
 
       <button type="submit">Create Event</button>
     </form>
     <div id="create-event-result"></div>
   </main>
 
-  <!-- Common Footer -->
   <footer>
     <p>&copy; 2025 College Event Website</p>
   </footer>
 
-  <!-- Event Creation Script -->
   <script>
-    // --- Role Check: Only allow Admin/Super Admin access ---
+    function openMapPopup() {
+      window.open('map-popup.html', 'MapPopup', 'width=700,height=600');
+    }
+
+    // Map integration
+    window.addEventListener('message', function(event) {
+      if (typeof event.data === 'string') {
+        document.getElementById('location').value = event.data;
+      }
+    }, false);
+
+    // Role check
     const userRole = localStorage.getItem("userRole");
     if (!(userRole === "admin" || userRole === "superadmin")) {
       alert("Unauthorized. Only admin users can create events.");
       window.location.href = "dashboard.html";
     }
 
-    // Handle event creation form submission via AJAX
-    document.getElementById("create-event-form").addEventListener("submit", function(e) {
+    // Populate user data
+    const userDataStr = localStorage.getItem("user");
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        document.getElementById("university_ID").value = userData.university_ID || "";
+        document.getElementById("created_by_UID").value = userData.id || "";
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+      }
+    }
+
+    // Form submission with JSON body
+    document.getElementById("create-event-form").addEventListener("submit", function (e) {
       e.preventDefault();
-      const formData = new FormData(e.target);
+
+      const eventData = {
+        event_name: document.getElementById("event-name").value,
+        event_category: document.getElementById("event-category").value,
+        description: document.getElementById("event-description").value,
+        event_date: document.getElementById("event-date").value,
+        event_time: document.getElementById("event-time").value,
+        location_ID: parseInt(document.getElementById("location").value),
+        contact_phone: document.getElementById("contact-phone").value,
+        contact_email: document.getElementById("contact-email").value,
+        ISA_type: document.getElementById("ISA_type").value,
+        university_ID: parseInt(document.getElementById("university_ID").value),
+        created_by_UID: null,
+      };
 
       fetch("api/createEvent.php", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventData)
       })
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
         const resultDiv = document.getElementById("create-event-result");
         if (data.success) {
-          resultDiv.innerHTML = "<p>Event created successfully!</p>";
-          e.target.reset();
+          resultDiv.innerHTML = "<p>✅ Event created successfully!</p>";
+          document.getElementById("create-event-form").reset();
         } else {
-          resultDiv.innerHTML = "<p>Error: " + data.error + "</p>";
+          resultDiv.innerHTML = "<p>❌ Error: " + (data.error || "Unknown error") + "</p>";
         }
       })
       .catch(err => {
-        console.error("Error creating event:", err);
-        document.getElementById("create-event-result").innerHTML = "<p>Error creating event. Please try again.</p>";
+        console.error("Event creation error:", err);
+        document.getElementById("create-event-result").innerHTML = "<p>❌ Error creating event. Please try again.</p>";
       });
     });
   </script>
 </body>
 </html>
-
