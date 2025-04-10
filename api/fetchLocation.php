@@ -22,7 +22,7 @@ if ($conn->connect_error) {
 }
 
 // Prepare and execute query
-$stmt = $conn->prepare("SELECT location_ID, name, latitude, longitude FROM Location WHERE location_ID = ?");
+$stmt = $conn->prepare("SELECT location_ID, address FROM Location WHERE location_ID = ?");
 $stmt->bind_param("i", $location_ID);
 $stmt->execute();
 $result = $stmt->get_result();

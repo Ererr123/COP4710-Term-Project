@@ -13,7 +13,6 @@
     <nav>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="events.html">Events</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
         <li><a href="login.html">Login/Register</a></li>
@@ -72,10 +71,7 @@
         
         <label for="reg-university-ID">University:</label>
         <select id="reg-university-ID" name="reg-university-ID" required>
-          <option value="">-- Select University --</option>
-          <option value="1">UCF</option>
-          <option value="2">UF</option>
-          <option value="3">FSU</option>
+          <option value="">Loading universities...</option>
         </select>
         
         <button id="register-button" type="submit">Register</button>
@@ -88,6 +84,32 @@
   <footer>
     <p>&copy; 2025 College Event Website</p>
   </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    fetch("api/fetchUniversities.php")
+      .then((res) => res.json())
+      .then((data) => {
+        const select = document.getElementById("reg-university-ID");
+        select.innerHTML = ""; // Clear initial option
+  
+        if (data.success && data.universities.length > 0) {
+          data.universities.forEach((uni) => {
+            const option = document.createElement("option");
+            option.value = uni.university_ID;
+            option.textContent = uni.name;
+            select.appendChild(option);
+          });
+        } else {
+          select.innerHTML = '<option value={0}>No universities available</option>';
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching universities:", err);
+        document.getElementById("reg-university-ID").innerHTML =
+          '<option value="">Error loading universities</option>';
+      });});
+  </script>
 
   <script src="js/login-register.js"></script>
 </body>

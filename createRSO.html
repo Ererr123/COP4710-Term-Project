@@ -16,6 +16,7 @@
         <li><a href="events.html">Events</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
+        <li><a href="RSO.html">RSOs</a></li>
         <li><a href="login.html">Logout</a></li>
       </ul>
     </nav>
@@ -28,9 +29,11 @@
       <label for="rso-name">RSO Name:</label>
       <input type="text" id="rso-name" name="name" required />
 
-      <label for="university_ID">University ID:</label>
-      <input type="number" id="university_ID" name="university_ID" required />
-
+      <label for="university_ID">Select University:</label>
+      <select id="university_ID" name="university_ID" required>
+        <option value="">Loading universities...</option>
+      </select>
+      
       <button type="submit">Create RSO</button>
     </form>
     <div id="create-rso-result"></div>
@@ -49,6 +52,29 @@
       alert("Unauthorized. Only admin users can create RSOs.");
       window.location.href = "dashboard.html";
     }
+
+    fetch("api/fetchUniversities.php")
+    .then((res) => res.json())
+    .then((data) => {
+      const select = document.getElementById("university_ID");
+      select.innerHTML = ""; // Clear initial option
+
+      if (data.success && data.universities.length > 0) {
+        data.universities.forEach((uni) => {
+          const option = document.createElement("option");
+          option.value = uni.university_ID;
+          option.textContent = uni.name;
+          select.appendChild(option);
+        });
+      } else {
+        select.innerHTML = '<option value="">No universities available</option>';
+      }
+    })
+    .catch((err) => {
+      console.error("Error fetching universities:", err);
+      document.getElementById("university_ID").innerHTML =
+        '<option value="">Error loading universities</option>';
+    });
 
     // Form submit handler
     document.getElementById("create-rso-form").addEventListener("submit", function (e) {

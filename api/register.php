@@ -10,7 +10,7 @@
 	$password = $data['password'] ?? '';
 	$university_ID = $data['university_ID'] ?? 0;
 	
-	if (empty($username) || empty($password) || empty($name) || empty($user_type) || empty($university_ID)) {
+	if (empty($username) || empty($password) || empty($name) || empty($user_type)) {
 		http_response_code(400);
 		echo json_encode(["error" => "Fields cannot be empty"]);
 		exit();
